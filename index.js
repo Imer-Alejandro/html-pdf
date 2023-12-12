@@ -4,7 +4,7 @@ const cors = require('cors');
 const fs = require('fs');
 const util = require('util');
 const htmlToPdf = require('html-pdf');
-const bodyParser = require('body-parser');
+const bodyParser = require('body-parser'); 
 const port = process.env.PORT || 5000;
 
 app.use(cors());
