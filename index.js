@@ -19,6 +19,9 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.get('/',(req,res)=>{
+    res.send('inicio')
+})
 
 // Ruta para recibir la plantilla HTML y generar el PDF
 app.post('/generar-pdf', (req, res) => {
