@@ -5,14 +5,6 @@
         "src": "./index.js",
         "use": "@now/node"
       }
-    ],
-    "routes": [
-      {
-      "src": "/generar-pdf",
-      "dest": "./index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "*"
-      } 
-    }
     ]
+   
   }

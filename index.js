@@ -25,6 +25,11 @@ app.get('/',(req,res)=>{
     res.send('inicio')
 })
 
+app.post('/example/:data',(req,res)=>{
+  const data = req.params.data
+  res.send(`${data}`)
+})
+
 // Ruta para recibir la plantilla HTML y generar el PDF
 app.post('/generar-pdf', (req, res) => {
     const { html } = req.body;
