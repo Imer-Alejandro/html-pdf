@@ -7,17 +7,19 @@ const htmlToPdf = require('html-pdf');
 const bodyParser = require('body-parser'); 
 const port = process.env.PORT || 5000;
 
-app.use(cors());
+const corsOptions = {
+  origin: '*', // Permite conexiones desde cualquier origen
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 
 const createPdf = util.promisify(htmlToPdf.create);
 app.use(bodyParser.json());
 
-// Configuración CORS para Express
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*'); // Puedes ajustar esto según tus necesidades
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+
 
 app.get('/',(req,res)=>{
     res.send('inicio')
