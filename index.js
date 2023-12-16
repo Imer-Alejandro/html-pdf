@@ -16,7 +16,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-const createPdf = util.promisify(htmlToPdf.create);
+
 app.use(bodyParser.json());
 
 
@@ -30,32 +30,44 @@ app.post('/example/:data',(req,res)=>{
   res.send(`${data}`)
 })
 
-// Ruta para recibir la plantilla HTML y generar el PDF
-app.post('/generar-pdf', (req, res) => {
-    const { html } = req.body;
-   
-    const pdfOptions = { format: 'Letter' };
-  
-    htmlToPdf.create(html, pdfOptions).toFile('factura.pdf', (err, pdfPath) => {
+//rutas para general el pdf de las facturas
+
+const createPdf = async (html, pdfOptions) => {
+  return new Promise((resolve, reject) => {
+    htmlToPdf.create(html, pdfOptions).toBuffer((err, buffer) => {
       if (err) {
         console.error('Error al generar el PDF:', err);
-        res.status(500).send('Error al generar el PDF',err,pdfPath);
+        reject(err);
       } else {
-        console.log('PDF generado:', pdfPath);
-  
-        // Envía el archivo PDF al cliente para su descarga
-        res.download(pdfPath.filename, 'factura.pdf', err => {
-          if (err) {
-            console.error('Error al descargar el PDF:', err);
-          }
-                  // Elimina el archivo PDF después de descargarlo
-          // (Opcional: puedes optar por no eliminarlo si deseas conservar copias)
-          fs.unlinkSync(pdfPath.filename);
-        });
+        resolve(buffer);
       }
     });
   });
-  
+};
+
+// Ruta para recibir la plantilla HTML y generar el PDF
+// Ruta para recibir la plantilla HTML y generar el PDF
+app.post('/generar-pdf', async (req, res) => {
+  try {
+    const { html } = req.body;
+    const pdfOptions = { format: 'Letter' };
+
+    const pdfBuffer = await createPdf(html, pdfOptions);
+
+    // Configura los encabezados de la respuesta para indicar que es un archivo PDF
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=factura.pdf');
+
+    // Log del tamaño del buffer
+    console.log('PDF generado:', pdfBuffer.length, 'bytes');
+
+    // Envía el contenido del PDF directamente al cliente
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('Error al generar el PDF:', error);
+    res.status(500).send('Error al generar el PDF');
+  }
+});
 
 app.listen(port, () => {
     console.log(`Servidor escuchando en el puerto ${port}`);
