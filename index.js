@@ -1,11 +1,15 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const fs = require('fs');
-const util = require('util');
-const htmlToPdf = require('html-pdf');
-const bodyParser = require('body-parser'); 
+const bodyParser = require('body-parser');
+const ejs = require('ejs');
+const puppeteer = require('puppeteer');
+const path = require('path');
+
 const port = process.env.PORT || 5000;
+
+// Configura el middleware para archivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
 
 const corsOptions = {
   origin: '*', // Permite conexiones desde cualquier origen
@@ -15,51 +19,45 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-
 app.use(bodyParser.json());
 
+// Configura el motor de plantillas EJS
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
+app.get('/', (req, res) => {
+  res.send('inicio');
+});
 
-app.get('/',(req,res)=>{
-    res.send('inicio')
-})
+app.post('/example/:data', (req, res) => {
+  const data = req.params.data;
+  res.send(`${data}`);
+});
 
-app.post('/example/:data',(req,res)=>{
-  const data = req.params.data
-  res.send(`${data}`)
-})
-
-//rutas para general el pdf de las facturas
-
-const createPdf = async (html, pdfOptions) => {
-  return new Promise((resolve, reject) => {
-    htmlToPdf.create(html, pdfOptions).toBuffer((err, buffer) => {
-      if (err) {
-        console.error('Error al generar el PDF:', err);
-        reject(err);
-      } else {
-        resolve(buffer);
-      }
-    });
-  });
-};
-
-// Ruta para recibir la plantilla HTML y generar el PDF
-// Ruta para recibir la plantilla HTML y generar el PDF
+// Ruta para recibir la petición y generar y descargar el PDF
 app.post('/generar-pdf', async (req, res) => {
-  try {
-    const { html } = req.body;
-    const pdfOptions = { format: 'Letter' };
+  const { datos } = req.body;  // Ajusta esto según cómo envías los datos
 
-    const pdfBuffer = await createPdf(html, pdfOptions);
+  try {
+    // Renderiza la plantilla con los datos
+    const html = await ejs.renderFile(path.join(__dirname, 'views', 'factura.ejs'), { datos });
+
+    // Crea una instancia de Puppeteer
+    const browser = await puppeteer.launch({ headless: 'new' });
+    const page = await browser.newPage();
+
+    // Establece el contenido HTML en la página
+    await page.setContent(html);
+
+    // Genera el PDF directamente con Puppeteer
+    const pdfBuffer = await page.pdf({ format: 'A4' });
+
+    // Cierra la instancia de Puppeteer
+    await browser.close();
 
     // Configura los encabezados de la respuesta para indicar que es un archivo PDF
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=factura.pdf');
-
-    // Log del tamaño del buffer
-    console.log('PDF generado:', pdfBuffer.length, 'bytes');
 
     // Envía el contenido del PDF directamente al cliente
     res.send(pdfBuffer);
@@ -70,5 +68,5 @@ app.post('/generar-pdf', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Servidor escuchando en el puerto ${port}`);
-  });
+  console.log(`Servidor escuchando en el puerto ${port}`);
+});

@@ -1,0 +1,149 @@
+<html>
+    <head>
+       <style>
+       @import url("https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900");
+
+        .factura {
+          font-family: 'Arial', sans-serif;
+          padding: 20px;
+        }
+
+        .encabezado {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+
+        .encabezado img{
+          width: 150px;
+          height: 150px;
+        }
+
+        .slogan{
+          font-size: 0.9em;
+          color: #5a5a5a;
+          text-align: center;
+          margin-bottom: 10px;
+        }
+        .contacto {
+          font-size: 0.7em;
+          color: #5a5a5a;
+          text-align: center;
+          margin-bottom: 10px;
+        }
+        .info {
+          margin-top: 10px;
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 10px;
+        }
+
+        .izquierda {
+          text-align: left;
+          margin-bottom:10px;
+
+        }
+        .contenido{
+          color: #5a5a5a;
+        }
+        .derecha {
+          text-align: right;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        }
+
+        th, td {
+          padding: 8px;
+          text-align: left;
+        }
+
+        th {
+          background-color: #E55226; /* Color azul claro pastel para el encabezado de la tabla */
+          color: #fff; /* Texto blanco para contrastar */
+        }
+
+        tr:nth-child(even) {
+          background-color: rgba(173, 216, 230, 0.2); /* Fondo alternativo más opaco para filas pares */
+        }
+
+        .total {
+          text-align: right;
+          margin-bottom: 20px;
+        }
+
+        .pie-pagina {
+          text-align: center;
+        }
+     </style>
+    </head>
+     <body>
+        <div>
+            <div class="factura">
+              <div class="encabezado">
+                <h2>Rodríguez Embutidos</h2>
+                <h3 class="slogan">Donde la calidad reina</h3>
+                <p class="contacto">Contacto: (829) 317-0381</p>
+                <br><br><br><br><br>
+                <div class="info">
+                  <div class="izquierda">Fecha: <span class="contenido"><%= datos.fecha %></span></div>
+                    <% if (datos.nombre_cliente) { %>
+                        <!-- Este elemento se mostrará solo si mostrarElemento es true -->
+                        <div class="izquierda">Cliente: <span class="contenido"><%= datos.nombre_cliente %></span></div>
+                      <% } else { %>
+                        <!-- Este elemento se mostrará si mostrarElemento es false -->
+                       
+                      <% } %>
+                  <div class="derecha">Código: <span class="contenido"><%= datos.id_ventas %></span></div>
+                </div>
+                <div class="info">
+                  <div class="derecha">Tipo de venta: <span class="contenido"><%=datos.tipo_venta %></span></div>
+                </div>
+              </div>
+            </div>
+
+          <!-- Detalles de los productos vendidos -->
+          <table>
+            <thead>
+              <tr>
+                <th class="izquierda">Producto</th>
+                <th class="derecha">Precio</th>
+                <th class="derecha">Cantidad</th>
+                <th class="derecha">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+                <% const detallesProducto = JSON.parse(datos.detalles_producto); %>
+                <% detallesProducto.forEach(producto => { %>
+                    <tr>
+                      <td class="izquierda"><%= producto.nombre_producto %></td>
+                      <td class="derecha">
+                        <%= producto.precio_venta %>
+                        <% if (producto.vender_por !== 'unidad') { %>
+                          /lb
+                        <% } else { %>
+                          /und
+                        <% } %>
+                      </td>
+                      <td class="derecha"><%= producto.cantidad_venta %></td>
+                      <td class="derecha"><%= producto.total_producto %></td>
+                    </tr>
+                  <% }); %>
+              <!-- Agrega más filas según sea necesario -->
+            </tbody>
+          </table>
+
+              <!-- Total de la venta -->
+              <div class="total">
+                <span>Total: <span class="contenido"><%= datos.total_venta %></span></span>
+              </div>
+              <hr>
+              <br>
+              <!-- Pie de página -->
+              <div class="pie-pagina">
+                <p>Gracias por su compra</p>
+              </div>
+        </div>
+    </body>
+  </html>
